@@ -39,8 +39,8 @@ Process
 - setResponse () -> None [sent ack/rej to neighbours]
 - explore ( messagesReceived )
 
-- checkTerminate
-- checkLeader
+- checkIfTerminate
+- checkIfLeader
 
 Message
 
@@ -64,4 +64,3 @@ Fields:
 
 - Sennan:
   - In the version of Sharayu he keeps the round value in each process while I think we don't have to do that
-  - On the other hand I think we should use a brocast process to do the final leader broad cast to all workers and finally randomly pick a worker to know the leader
