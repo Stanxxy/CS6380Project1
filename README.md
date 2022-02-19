@@ -9,4 +9,8 @@ P0 - Main Thread
 * Print Leader
 
 Process
-* Send message to neighbors
+* Fields: processId, status, round, maxId, neighbors, status (active/inactive), parent, termination (boolean)
+* Constructor: (processId)
+* sendMessage(process, message)
+* getMessage (message)
+* explore(messagesReceived)
