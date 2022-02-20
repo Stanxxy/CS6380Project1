@@ -4,7 +4,7 @@ The repo for the first distributed computing project
 
 ## Design doc
 
-P0 - Main Thread
+P0 - master Thread
 
 - Initialize
 - Start round
@@ -18,9 +18,8 @@ Process
 
   - processId - int / string ( Can be a hash UUID )
   - status - boolean \[active/inactive\] ( for running or kill )
-  - round - int ## do we really need to care about round? I think its just for testing purpose
   - maxId - int / string
-  - neighbors - set ( neighbours )
+  - neighbors - set ( neighbors )
   - children - set ( children )
   - others - set ( non children )
   - parent - int / string
@@ -32,13 +31,11 @@ Process
 
 - Constructor: (int/string processId, List\<int\> neighbours) -> None
   // Initialize the process and do
-- run() -> None ( start the outer while loop )
-  // the flood procedure for each process
+- run() -> None
+  // the flood procedure for each process, start the outer while loop
   Util functions
-- sendMessage ( process: Process, message: Message ) -> None
-  // send single message
-- broadcastMessage ( receivers: Set, message: Message ) -> None
-  // send message to a set of processes
+- waitToStart() -> None
+  // wait to start one round by
 - Comparison ( mailbox: Set ) -> int/string
   // compare the current stored id with the discovered maximum id from explore messages. Also return the greatest id
 - setResponse () -> None
@@ -49,6 +46,8 @@ Process
   // check if terminated
 - checkIfLeader () -> boolean
   // check if leader
+- setUpLeader () -> None
+  // create or receive the leader message and pass it to children ( if the worker could ). for the leader it would simply pass the message to children and only receive the start command from master thread.
 
 Message
 
@@ -59,14 +58,23 @@ Fields:
   - ACK - ack message ( if sender is parent )
   - REJ - reject message ( if sender is not parent )
   - LDB - broadcast leader to all follower ( if flood finished )
-  - BGN - begin one round ( sent by main to worker for begin of one round )
-  - END - end one round ( sent by worker to main for report end of a round )
+  - BGN - begin one round ( sent by master to worker for begin of one round )
+  - END - end one round ( sent by worker to master for report end of a round )
   - TMN - tell other process current process terminated ( confirm message to terminate the flood )
-  - FIN - kill all process ( sent by main to worker )
+  - FIN - kill all process ( sent by master to worker )
 - senderId - int/string ( the UID of sender process )
 - infoId - int/string ( the info ID could be various meaning )
   - parent ID ( when sent terminate to master )
   - max-id ( when doing exploration )
+
+Utils
+
+- sendMessage ( process: Process, message: Message ) -> None
+  // send single message
+- broadcastMessage ( receivers: Set, message: Message ) -> None
+  // send message to a set of processes
+- constructGraph (List\<List\<int\>\>) -> Map
+  // create a map represent the
 
 ## Comments:
 
