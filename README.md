@@ -16,11 +16,13 @@ Process
 
 - Fields:
 
-  - processId - int / string(Can be a hash UUID)
-  - status - boolean \[active/inactive\] ( for running and kill )
+  - processId - int / string ( Can be a hash UUID )
+  - status - boolean \[active/inactive\] ( for running or kill )
   - round - int ## do we really need to care about round? I think its just for testing purpose
   - maxId - int / string
-  - neighbors - list / set
+  - neighbors - set ( neighbours )
+  - children - set ( children )
+  - others - set ( non children )
   - parent - int / string
   - termination - boolean ( for node terminate or not )
   - inbox - BlockingQueue ( for message receiving )
@@ -29,18 +31,24 @@ Process
   * round_lock - Lock ( )
 
 - Constructor: (int/string processId, List\<int\> neighbours) -> None
+  // Initialize the process and do
 - run() -> None ( start the outer while loop )
+  // the flood procedure for each process
   Util functions
 - sendMessage ( process: Process, message: Message ) -> None
-
-* broadcastMessage ( receivers: Set, message: Message ) -> None
-
-- Comparison ( mailbox: Set ) -> set
-- setResponse () -> None [sent ack/rej to neighbours]
-- explore ( messagesReceived )
-
-- checkIfTerminate
-- checkIfLeader
+  // send single message
+- broadcastMessage ( receivers: Set, message: Message ) -> None
+  // send message to a set of processes
+- Comparison ( mailbox: Set ) -> int/string
+  // compare the current stored id with the discovered maximum id from explore messages. Also return the greatest id
+- setResponse () -> None
+  // response to all neighbours with ack or rej
+- explore () -> None ( messagesReceived )
+  // send explore messages to all neighbours
+- checkIfTerminate () -> boolean
+  // check if terminated
+- checkIfLeader () -> boolean
+  // check if leader
 
 Message
 
@@ -64,3 +72,4 @@ Fields:
 
 - Sennan:
   - In the version of Sharayu he keeps the round value in each process while I think we don't have to do that
+  * We could add one round of leader broad casting
