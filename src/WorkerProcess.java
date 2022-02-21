@@ -182,6 +182,9 @@ public class WorkerProcess extends Process{
 				this.barrier.await();
 				collectResponse();
 
+				this.receivedREJsFrom.clear();
+				this.receivedACKsFrom.clear();
+
 				checkLeader();
 				checkTerminate();
 
