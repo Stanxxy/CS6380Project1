@@ -178,12 +178,34 @@ public class WorkerProcess extends Process{
 				explore();
 				this.barrier.await();
 				compareId();
-				
+				sendResponse();
+				this.barrier.await();
+				collectResponse();
+
+				checkLeader();
+				checkTerminate();
+
+				if(this.isReadyToTerminate){
+					Message msg = new Message(this.processId, this.parent, Type.TMN);
+					this.master.putInMessage(msg);
+					broadcast(this.neighbors.values(), msg);
+				} else{
+					Message msg = new Message(this.processId, Type.BGN);
+					this.master.putInMessage(msg);
+				}
 			} catch (InterruptedException | BrokenBarrierException e) {
 				e.printStackTrace();
 			}
-
 		}
+	}
+
+
+
+	@Override
+	public String toString() {
+		return "Process{" +
+				"uid=" + this.processId +
+				'}';
 	}
 }
 
