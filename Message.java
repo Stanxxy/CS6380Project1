@@ -1,38 +1,34 @@
-package Project1;
+package src;
 
 public class Message {
-	private String messageType; // message type
+	private Type messageType; // message type
 	private int senderId; // sender process
 	private int infoId;
 	
-	public Message() {
-		this.messageType = "";
-		this.senderId = 0;
-		this.infoId = 0;
-	}
-
-	public String getMessageType() {
-		return messageType;
-	}
-
-	public void setMessageType(String messageType) {
+	public Message(int senderId, Type messageType) {
 		this.messageType = messageType;
+		this.senderId = senderId;
+		this.infoId = -1;
+	}
+
+	public Message(int senderId, int infoId, Type messageType) {
+		this.messageType = messageType;
+		this.senderId = senderId;
+		this.infoId = infoId;
+	}
+
+	public Type getMessageType() {
+		return messageType;
 	}
 
 	public int getSenderId() {
 		return senderId;
 	}
 
-	public void setSenderId(int senderId) {
-		this.senderId = senderId;
-	}
-
 	public int getInfoId() {
 		return infoId;
 	}
-
-	public void setInfoId(int infoId) {
-		this.infoId = infoId;
-	}
 }
+
+
 
