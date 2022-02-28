@@ -94,10 +94,6 @@ public class MainThread {
 						p.putInMessage(new Message(master.getProcessId(), Type.BGN));
 						//barrier.await();
 					}
-					else if(m.getMessageType().equals(Type.TMN)){
-						//p.putInMessage(new Message(master.getProcessId(), Type.FIN));
-						//barrier.await();
-					}
 				}
 				
 				for(WorkerProcess p: processes) {
@@ -125,8 +121,8 @@ public class MainThread {
 			}
 			
 			//for(WorkerProcess p: processes) {
-				//System.out.println("Process Id " + p.getProcessId() + " neighbors " + p.getTerminatedNeighbors());
-				
+					//System.out.println("Process Id " + p.getProcessId() + " neighbors " + p.getTerminatedNeighbors());
+				//}
 			//}
 			System.out.println("Leader: " + leader);
 			
@@ -139,4 +135,5 @@ public class MainThread {
 	}
 
 }
+
 
