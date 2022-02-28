@@ -115,12 +115,12 @@ public class WorkerProcess extends Process{
 					// this time the info id is
 					this.children.add(msg.getSenderId());
 					this.others.remove(msg.getSenderId());
-					this.receivedACKsFrom.remove(msg.getSenderId());
+					this.receivedACKsFrom.add(msg.getSenderId());
 					break;
 				case REJ:
 					this.others.add(msg.getSenderId());
 					this.children.remove(msg.getSenderId());
-					this.receivedREJsFrom.remove(msg.getSenderId());
+					this.receivedREJsFrom.add(msg.getSenderId());
 					this.isLeader = false;
 					break;
 				default:
@@ -136,7 +136,7 @@ public class WorkerProcess extends Process{
 	}
 
 	private void checkLeader(){
-		if(this.receivedACKsFrom.size() == this.children.size()){
+		if(this.parent == -1 && this.receivedACKsFrom.size() == this.children.size()){
 			this.isLeader = true;
 		}
 	}
@@ -193,7 +193,7 @@ public class WorkerProcess extends Process{
 					this.master.putInMessage(msg);
 					broadcast(this.neighbors.values(), msg);
 				} else{
-					Message msg = new Message(this.processId, Type.BGN);
+					Message msg = new Message(this.processId, Type.END);
 					this.master.putInMessage(msg);
 				}
 			} catch (InterruptedException | BrokenBarrierException e) {
