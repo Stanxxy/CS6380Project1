@@ -46,14 +46,22 @@ public class WorkerProcess extends Process implements Runnable{
 		this.inbox = new LinkedBlockingQueue<Message>();
 		this.barrier = barrier;
 
-		this.neighbors = new HashMap<>(neighbors);
+		this.neighbors = neighbors;
 		this.children = new HashSet<>();
-		this.others = new HashSet<>(this.neighbors.keySet());
+		this.others = new HashSet<>();
 		this.terminatedNeighbor = new HashSet<>();
 	}
 
 	public int getProcessId() {
 		return processId;
+	}
+	
+	public int getParent() {
+		return this.parent;
+	}
+	
+	public Set<Integer> getTerminatedNeighbors(){
+		return this.terminatedNeighbor;
 	}
 
 	private void kill() {
@@ -70,14 +78,13 @@ public class WorkerProcess extends Process implements Runnable{
 			Message msg = this.inbox.take();
 			if(msg.getMessageType().equals(Type.BGN)){
 				// start current round
-				//System.out.println(msg.getSenderId() + " " + this.processId);
 				flag = true;
 			} else if(msg.getMessageType().equals(Type.FIN)){
 				// start self destruction
 				this.status = false;
 				flag = true;
 			} else {
-				//this.inbox.offer(msg);
+				this.inbox.offer(msg);
 			}
 		}
 	}
@@ -99,6 +106,7 @@ public class WorkerProcess extends Process implements Runnable{
 				case TMN:
 					// this time the info id is
 					this.terminatedNeighbor.add(msg.getSenderId());
+					break;
 				default:
 					this.inbox.offer(msg);
 					break;
@@ -127,12 +135,12 @@ public class WorkerProcess extends Process implements Runnable{
 					// this time the info id is
 					this.children.add(msg.getSenderId());
 					this.others.remove(msg.getSenderId());
-					this.receivedACKsFrom.remove(msg.getSenderId());
+					this.receivedACKsFrom.add(msg.getSenderId());
 					break;
 				case REJ:
 					this.others.add(msg.getSenderId());
 					this.children.remove(msg.getSenderId());
-					this.receivedREJsFrom.remove(msg.getSenderId());
+					this.receivedREJsFrom.add(msg.getSenderId());
 					this.isLeader = false;
 					break;
 				default:
@@ -148,7 +156,7 @@ public class WorkerProcess extends Process implements Runnable{
 	}
 
 	private void checkLeader(){
-		if(this.receivedACKsFrom.size() == this.children.size()){
+		if(this.parent == -1 && this.receivedACKsFrom.size() == this.children.size()){
 			this.isLeader = true;
 		}
 	}
@@ -181,20 +189,16 @@ public class WorkerProcess extends Process implements Runnable{
 
 	@Override
 	public void run(){
-		while(this.status){
+		while(status){
 			try {
-				//System.out.println("WP " + this.processId + this.status);
 				waitToStartRound();
-				//if(!this.status){
-					//System.out.println("Done: " + this.processId);
-					//break;
-				//}
-				
+				if(!this.status){
+					break;
+				}
 				explore();
 				this.barrier.await();
-				sendResponse();
 				compareId();
-				
+				sendResponse();
 				this.barrier.await();
 				collectResponse();
 
@@ -203,33 +207,19 @@ public class WorkerProcess extends Process implements Runnable{
 
 				checkLeader();
 				checkTerminate();
-				
+
 				if(this.isReadyToTerminate){
-					//System.out.println("terminate: " + this.processId);
 					Message msg = new Message(this.processId, this.parent, Type.TMN);
 					this.master.putInMessage(msg);
 					broadcast(this.neighbors.values(), msg);
-					
 				} else{
-					if(this.isLeader) {
-						//System.out.println("Lead: " + this.processId);
-						Message msg = new Message(this.processId, this.parent, Type.LDB);
-						this.master.putInMessage(msg);
-						broadcast(this.neighbors.values(), msg);
-						break;
-					}
-					else {
-						//System.out.println("end: " + this.processId);
-						Message msg = new Message(this.processId, Type.END);
-						this.master.putInMessage(msg);
-					}
+					Message msg = new Message(this.processId, Type.END);
+					this.master.putInMessage(msg);
 				}
-				
 			} catch (InterruptedException | BrokenBarrierException e) {
 				e.printStackTrace();
 			}
 		}
-		//System.out.println(this.status);
 	}
 
 
@@ -241,4 +231,7 @@ public class WorkerProcess extends Process implements Runnable{
 				'}';
 	}
 }
+
+
+
 
