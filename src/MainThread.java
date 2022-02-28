@@ -1,8 +1,11 @@
 package src;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -58,7 +61,7 @@ public class MainThread {
 						neighbors.put(process_ids[neighbor - 1], processes[neighbor - 1]);
 					}
 				}
-				
+	
 				p.setWorkerProcess(master, neighbors, barrier);
 				p.putInMessage(new Message(master.getProcessId(), Type.BGN));
 			}
@@ -75,27 +78,57 @@ public class MainThread {
 				threads[i] = thread;
 				thread.start();
 			}
-			int leader = 0;
-			while(true) {
-				Message m = master.inbox.take();
-				int index = pid.get(m.getSenderId());
-				WorkerProcess p = processes[index];
+			int leader = -1;
+			boolean run = true;
+			while(run) {
+				int num_leaders = 0;
+				int numOfMessages = master.inbox.size();
+				
+				for(int i=0;i<numOfMessages; i++){
+					Message m = master.inbox.take();
+					int index = pid.get(m.getSenderId());
+					WorkerProcess p = processes[index];
 						
-				if(m.getMessageType().equals(Type.END)) {
-					//System.out.println("End: " + m.getSenderId());
-					p.putInMessage(new Message(master.getProcessId(), Type.BGN));
-					//barrier.await();
+					if(m.getMessageType().equals(Type.END) || m.getMessageType().equals(Type.TMN)) {
+						//System.out.println("End: " + m.getSenderId());
+						p.putInMessage(new Message(master.getProcessId(), Type.BGN));
+						//barrier.await();
+					}
+					else if(m.getMessageType().equals(Type.TMN)){
+						//p.putInMessage(new Message(master.getProcessId(), Type.FIN));
+						//barrier.await();
+					}
 				}
-				else if(m.getMessageType().equals(Type.TMN)){
-					p.putInMessage(new Message(master.getProcessId(), Type.FIN));
-					//barrier.await();
+				
+				for(WorkerProcess p: processes) {
+					if(p.getParent() == -1) {
+						num_leaders++;
+					}
 				}
-				else if(m.getMessageType().equals(Type.LDB)){
-					System.out.println("Leader: " + m.getSenderId());
-					break;
-					//barrier.await();
+				
+				if(num_leaders == 1) {
+					for(WorkerProcess p: processes) {
+						if(p.getParent() == -1) {
+							leader = p.getProcessId();
+							run = false;
+							break;
+						}
+					}
+					
+					Message fin = new Message(leader, Type.FIN); // leader tells everyone to stop
+					for(WorkerProcess p: processes) {
+						p.putInMessage(fin);
+					}
+					
 				}
+				
 			}
+			
+			//for(WorkerProcess p: processes) {
+				//System.out.println("Process Id " + p.getProcessId() + " neighbors " + p.getTerminatedNeighbors());
+				
+			//}
+			System.out.println("Leader: " + leader);
 			
 			//System.out.println("main done");
 		} catch (IOException | InterruptedException e) {
@@ -106,3 +139,4 @@ public class MainThread {
 	}
 
 }
+
