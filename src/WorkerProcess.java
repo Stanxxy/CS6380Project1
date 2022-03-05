@@ -4,8 +4,9 @@ package src;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class WorkerProcess extends Process{
+public class WorkerProcess extends Process implements Runnable{
 	private int processId; // unique process id
 	private boolean status; // status - active or running
 	private int maxId; // max id process has seen
@@ -24,19 +25,29 @@ public class WorkerProcess extends Process{
 	// temporary space, empty after each round
 	private Set<Integer> receivedREJsFrom = new HashSet<>();
 	private Set<Integer> receivedACKsFrom = new HashSet<>();
-	
-	public WorkerProcess(int processId, Process master, HashMap<Integer, Process> neighbors) {
 
+	public WorkerProcess(int processId) {
 		this.processId = processId;
+		this.inbox = new LinkedBlockingQueue<Message>();
+		
+	}
+	
+	public void setBarrier(CyclicBarrier barrier) {
+		this.barrier = barrier;
+	}
+	
+	public void setWorkerProcess(Process master, HashMap<Integer, Process> neighbors, CyclicBarrier barrier) {
 		this.status = true; // active
 		this.maxId = processId;
-		this.parent = 0;
+		this.parent = -1;
 		this.master = master;
 		this.isLeader = false;
+		this.inbox = new LinkedBlockingQueue<Message>();
+		this.barrier = barrier;
 
-		this.neighbors = new HashMap<>(neighbors);
+		this.neighbors = neighbors;
 		this.children = new HashSet<>();
-		this.others = new HashSet<>(this.neighbors.keySet());
+		this.others = new HashSet<>();
 		this.terminatedNeighbor = new HashSet<>();
 	}
 
@@ -44,12 +55,8 @@ public class WorkerProcess extends Process{
 		return processId;
 	}
 
-	private void kill() {
-		this.status = false;
-	}
-
-	private void setMaxId(int maxId) {
-		this.maxId = maxId;
+	public int getParent() {
+		return this.parent;
 	}
 
 	private void waitToStartRound() throws InterruptedException {
@@ -211,4 +218,3 @@ public class WorkerProcess extends Process{
 				'}';
 	}
 }
-
