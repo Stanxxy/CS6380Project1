@@ -1,5 +1,6 @@
 *.iml
 .idea
-.out
+out
 *.docx
 *.pdf
+.tar

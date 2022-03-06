@@ -96,6 +96,7 @@ public class MainThread {
 								p.join();
 							}
 							run = false;
+							break;
 						}
 					}
 					

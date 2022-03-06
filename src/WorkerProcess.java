@@ -32,10 +32,6 @@ public class WorkerProcess extends Process implements Runnable{
 		
 	}
 	
-	public void setBarrier(CyclicBarrier barrier) {
-		this.barrier = barrier;
-	}
-	
 	public void setWorkerProcess(Process master, HashMap<Integer, Process> neighbors, CyclicBarrier barrier) {
 		this.status = true; // active
 		this.maxId = processId;
