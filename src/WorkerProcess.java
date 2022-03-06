@@ -69,6 +69,8 @@ public class WorkerProcess extends Process implements Runnable{
 			} else if(msg.getMessageType().equals(Type.FIN)){
 				// start self destruction
 				this.status = false;
+				
+				this.broadcast(this.neighbors.values(), msg);
 				flag = true;
 			} else {
 				this.inbox.offer(msg);
@@ -107,7 +109,7 @@ public class WorkerProcess extends Process implements Runnable{
 				Message msg = new Message(this.processId, Type.ACK);
 				pair.getValue().putInMessage(msg);
 			} else {
-				Message msg = new Message(this.processId, Type.REJ);
+				Message msg = new Message(this.processId, this.maxId, Type.REJ);
 				pair.getValue().putInMessage(msg);
 			}
 		}
@@ -127,7 +129,11 @@ public class WorkerProcess extends Process implements Runnable{
 				case REJ:
 					this.others.add(msg.getSenderId());
 					this.children.remove(msg.getSenderId());
+					if (msg.getInfoId() != this.maxId){
+						continue;
+					}
 					this.receivedREJsFrom.add(msg.getSenderId());
+
 					this.isLeader = false;
 					break;
 				default:
@@ -143,7 +149,7 @@ public class WorkerProcess extends Process implements Runnable{
 	}
 
 	private void checkLeader(){
-		if(this.parent == -1 && this.receivedACKsFrom.size() == this.children.size()){
+		if(this.parent == -1 && this.terminatedNeighbor.size() == this.neighbors.size()){
 			this.isLeader = true;
 		}
 	}
@@ -157,15 +163,16 @@ public class WorkerProcess extends Process implements Runnable{
 		Set<Integer> temp = new HashSet<>(this.children);
 		temp.removeAll(this.terminatedNeighbor);
 		if (temp.isEmpty()) {
+			//System.out.println(this.processId + " " + this.terminatedNeighbor);
 			// all children have terminated
 			allChildrenTerminated = true;
 		}
 
 		// check if a process has received REJs from other neighbors
 		// the process shouldn't expect a REJ from the parent to terminate, it may have happened in an earlier round
-		temp =  new HashSet<>(this.receivedREJsFrom);
-		temp.removeAll(others);
-		if (temp.isEmpty() && !others.isEmpty()) {
+		temp = new HashSet<>(this.others);
+		temp.removeAll(receivedREJsFrom);
+		if (temp.isEmpty()){// && !others.isEmpty()) {
 			receivedNACKFromOthers = true;
 		}
 
@@ -185,15 +192,22 @@ public class WorkerProcess extends Process implements Runnable{
 				explore();
 				this.barrier.await();
 				compareId();
+				//System.out.println("Process: " + this.processId + this.terminatedNeighbor);
 				sendResponse();
 				this.barrier.await();
 				collectResponse();
 
-				this.receivedREJsFrom.clear();
-				this.receivedACKsFrom.clear();
-
 				checkLeader();
 				checkTerminate();
+				
+				this.receivedREJsFrom.clear();
+				this.receivedACKsFrom.clear();
+				
+				if(this.isLeader && this.isReadyToTerminate) {
+					Message msg = new Message(this.processId, Type.LDB);
+					this.master.putInMessage(msg);
+					broadcast(this.neighbors.values(), new Message(this.processId, Type.FIN));
+				}
 
 				if(this.isReadyToTerminate){
 					Message msg = new Message(this.processId, this.parent, Type.TMN);
