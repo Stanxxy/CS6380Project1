@@ -19,12 +19,12 @@ The repo for the first distributed computing project
     - Partially contributed to WorkerProcess.java
     - Mainly contributed to code of MainThread.java
     - Helped test code
-    - Helped debug and fix issues in final versions of code
+    - Helped debug and fix issues in final version of code
   - Sai Nikhil Voruganti
     - Partially contributed to MainThread.java
     - Termination Process in WorkerProcess.java
-    - Came up with numerous use cases to test
-    - Debugged and fixed issues in final version of code
+    - Came up with several use cases to test
+    - Mainly debugged and fixed issues in final version of code
 
 ## How to compile
 
