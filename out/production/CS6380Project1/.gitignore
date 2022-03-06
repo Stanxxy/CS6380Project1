@@ -1,0 +1,6 @@
+*.iml
+.idea
+out
+*.docx
+*.pdf
+.tar
