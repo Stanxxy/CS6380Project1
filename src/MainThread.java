@@ -80,6 +80,39 @@ public class MainThread {
 			}
 			int leader = -1;
 			boolean run = true;
+			int num_end = 0;
+			while(run){
+				//barrier.await();
+				int numOfMessages = master.inbox.size();
+				
+				if(numOfMessages == n) {
+					//System.out.println(numOfMessages);
+					for(int i=0;i<numOfMessages; i++){
+						Message m = master.inbox.take();
+						
+						if(m.getMessageType().equals(Type.LDB)) {
+							leader = m.getSenderId();
+							run = false;
+						}
+					}
+					
+					if(run) {
+						Message begin = new Message(master.getProcessId(), Type.BGN);
+						for(WorkerProcess p: processes) {
+							p.putInMessage(begin);
+						}
+					}
+					
+					if(!run) {
+						Message fin = new Message(leader, Type.FIN);
+						for(WorkerProcess p: processes) {
+							p.putInMessage(fin);
+						}
+					}
+				}
+			}
+			/*
+			boolean run = true;
 			while(run) {
 				int num_leaders = 0;
 				int numOfMessages = master.inbox.size();
@@ -124,6 +157,7 @@ public class MainThread {
 					//System.out.println("Process Id " + p.getProcessId() + " neighbors " + p.getTerminatedNeighbors());
 				//}
 			//}
+			*/
 			System.out.println("Leader: " + leader);
 			
 			//System.out.println("main done");
@@ -135,5 +169,10 @@ public class MainThread {
 	}
 
 }
+
+
+
+
+
 
 
