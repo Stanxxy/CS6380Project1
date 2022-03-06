@@ -120,7 +120,7 @@ public class WorkerProcess extends Process implements Runnable{
 				Message msg = new Message(this.processId, Type.ACK);
 				pair.getValue().putInMessage(msg);
 			} else {
-				Message msg = new Message(this.processId, Type.REJ);
+				Message msg = new Message(this.processId, this.maxId, Type.REJ);
 				pair.getValue().putInMessage(msg);
 			}
 		}
@@ -140,7 +140,11 @@ public class WorkerProcess extends Process implements Runnable{
 				case REJ:
 					this.others.add(msg.getSenderId());
 					this.children.remove(msg.getSenderId());
+					if (msg.getInfoId() != this.maxId){
+						break;
+					}
 					this.receivedREJsFrom.add(msg.getSenderId());
+
 					this.isLeader = false;
 					break;
 				default:
@@ -176,9 +180,9 @@ public class WorkerProcess extends Process implements Runnable{
 
 		// check if a process has received REJs from other neighbors
 		// the process shouldn't expect a REJ from the parent to terminate, it may have happened in an earlier round
-		temp =  new HashSet<>(this.receivedREJsFrom);
-		temp.removeAll(others);
-		if (temp.isEmpty() && !others.isEmpty()) {
+		temp = new HashSet<>(this.others);
+		temp.removeAll(receivedREJsFrom);
+		if (temp.isEmpty()){// && !others.isEmpty()) {
 			receivedNACKFromOthers = true;
 		}
 

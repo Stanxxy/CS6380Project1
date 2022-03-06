@@ -89,7 +89,7 @@ public class MainThread {
 					int index = pid.get(m.getSenderId());
 					WorkerProcess p = processes[index];
 						
-					if(m.getMessageType().equals(Type.END) || m.getMessageType().equals(Type.TMN)) {
+					if(m.getMessageType().equals(Type.END) || m.getMessageType().equals(Type.TMN)) {//Why termination??
 						//System.out.println("End: " + m.getSenderId());
 						p.putInMessage(new Message(master.getProcessId(), Type.BGN));
 						//barrier.await();
