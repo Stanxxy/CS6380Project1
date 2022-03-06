@@ -92,6 +92,9 @@ public class MainThread {
 						
 						if(m.getMessageType().equals(Type.LDB)) {
 							leader = m.getSenderId();
+							for(Process p : processes){
+								p.join();
+							}
 							run = false;
 						}
 					}
@@ -159,7 +162,7 @@ public class MainThread {
 			*/
 			System.out.println("Leader: " + leader);
 			
-			//System.out.println("main done");
+			System.out.println("main done");
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

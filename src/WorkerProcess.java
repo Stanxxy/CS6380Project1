@@ -69,8 +69,11 @@ public class WorkerProcess extends Process implements Runnable{
 			} else if(msg.getMessageType().equals(Type.FIN)){
 				// start self destruction
 				this.status = false;
-				
-				this.broadcast(this.neighbors.values(), msg);
+				Set<Process> childrenProcesses = new HashSet<>();
+				for(int pid : this.children){
+					childrenProcesses.add(this.neighbors.get(pid));
+				}
+				this.broadcast(childrenProcesses, msg);
 				flag = true;
 			} else {
 				this.inbox.offer(msg);
@@ -130,10 +133,12 @@ public class WorkerProcess extends Process implements Runnable{
 					this.others.add(msg.getSenderId());
 					this.children.remove(msg.getSenderId());
 					if (msg.getInfoId() != this.maxId){
+						if(msg.getInfoId() > this.maxId){
+							this.isReadyToTerminate = false;
+						}
 						continue;
 					}
 					this.receivedREJsFrom.add(msg.getSenderId());
-
 					this.isLeader = false;
 					break;
 				default:
@@ -207,6 +212,7 @@ public class WorkerProcess extends Process implements Runnable{
 					Message msg = new Message(this.processId, Type.LDB);
 					this.master.putInMessage(msg);
 					broadcast(this.neighbors.values(), new Message(this.processId, Type.FIN));
+					this.status = false;
 				}
 
 				if(this.isReadyToTerminate){
