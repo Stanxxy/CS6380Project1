@@ -103,12 +103,12 @@ public class MainThread {
 						}
 					}
 					
-					if(!run) {
-						Message fin = new Message(leader, Type.FIN);
-						for(WorkerProcess p: processes) {
-							p.putInMessage(fin);
-						}
-					}
+					//if(!run) {
+						//Message fin = new Message(leader, Type.FIN);
+						//for(WorkerProcess p: processes) {
+						//	p.putInMessage(fin);
+						//}
+					//}
 				}
 			}
 			/*
@@ -169,6 +169,9 @@ public class MainThread {
 	}
 
 }
+
+
+
 
 
 
